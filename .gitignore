@@ -21,12 +21,6 @@ dist/
 .idea/
 .vscode/
 
-# Test artifacts
-examples/
-.pytest_cache/
-.coverage
-htmlcov/
-
 # AI coding artifacts
 notes.md
 prd.md
