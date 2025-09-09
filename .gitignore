@@ -22,13 +22,12 @@ dist/
 .vscode/
 
 # Test artifacts
+examples/
 .pytest_cache/
 .coverage
 htmlcov/
-examples/
-tests/
 
 # AI coding artifacts
 notes.md
-tasks.md
 prd.md
+tasks.md

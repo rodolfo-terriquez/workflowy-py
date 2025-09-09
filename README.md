@@ -1,15 +1,19 @@
 # workflowy-py
 
-> **Warning: Use at Your Own Risk**
+> **WARNING: USE AT YOUR OWN RISK**
 >
 > This software is provided "as is", without warranty of any kind. By using this library, you assume full responsibility for any accidental deletion, modification, or corruption of your Workflowy data. It is highly recommended that you create a backup of your data before performing any write operations.
 
-A clean, typed, sync Python client for the [Workflowy API](https://workflowy.com/api/docs/).
+A clean, typed, sync Python client for the [Workflowy API](https://beta.workflowy.com/api-reference/).
 
 ## Installation
 
+This package is not published on PyPI. To install it, you must clone the repository and install it from the local files:
+
 ```bash
-pip install workflowy-py
+git clone https://github.com/rodolfo-terriquez/workflowy-py.git
+cd workflowy-py
+pip install .
 ```
 
 ## Authentication
@@ -23,26 +27,34 @@ If no token is found, an `AuthError` is raised.
 
 ## Targeting Nodes
 
-All client methods that interact with a specific node (like `get_node`, `update_node`, `create_node`, etc.) accept a flexible `target` argument. This can be one of three things:
+All client methods that interact with a specific node (like `get_node`, `update_node`, etc.) accept a flexible `target` argument. Here are the recommended ways to target a node, in order of convenience:
 
-1.  **Node ID String**: The full, unique ID of a node. This is the most precise way to target a node.
+1.  **Partial ID from URL (Recommended)**: This is the easiest and most precise way to target a specific node. Simply click on a node in the Workflowy app and copy the 12-character ID from the URL.
     ```python
-    client.get_node("a5ed28fa-c9f6-439a-adcc-762378b295af")
+    # This ID comes from the URL, e.g., https://workflowy.com/#/b05b8e38b512
+    partial_id = "b05b8e38b512"
+
+    # The client will search your account and find the full node automatically
+    client.update_node(partial_id, note="This is the easiest way to target a node!")
     ```
 
-2.  **Node Path String**: A `/`-separated path representing the node's location. The client will traverse the tree to find it. This is the most convenient way for programmatic access.
+2.  **Node Path String**: If you need to find a node programmatically without knowing its ID, a `/`-separated path is the most convenient way. The client will traverse the tree to find it.
     ```python
     client.update_node("Projects/My Project/Tasks", note="An important update.")
     ```
 
-3.  **Node Object**: Any `Node` object that you have already fetched.
+3.  **Full Node ID String**: For maximum precision, you can use the full, unique UUID of a node.
+    ```python
+    client.get_node("a5ed28fa-c9f6-439a-adcc-762378b295af")
+    ```
+4.  **Node Object**: If you have already fetched a `Node` object, you can use it directly in other methods.
     ```python
     project_node = client.find_node_by_path("Projects/My Project")
     # Now you can use the object directly
     tasks = client.list_nodes(project_node)
     ```
 
-If a path is ambiguous or not found, a `NotFoundError` will be raised.
+If a path or partial ID is ambiguous or not found, a `NotFoundError` will be raised.
 
 ## Usage
 
@@ -144,7 +156,16 @@ except NotFoundError:
 
 #### By Partial ID from URL
 
-If you have the partial ID from a Workflowy URL, you can perform a recursive search to find the full node. See the `examples/find_by_partial_id.py` script for a detailed implementation.
+You can now use the 12-character partial ID from a Workflowy URL directly in any method. The client will automatically search your account to find the corresponding node.
+
+```python
+try:
+    # This ID comes from the node's URL
+    node = client.get_node("b05b8e38b512")
+    print(f"Found node by partial ID: {node.name}")
+except NotFoundError:
+    print("Node with that partial ID not found!")
+```
 
 ### Error Handling
 

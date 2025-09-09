@@ -29,7 +29,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/rodolfo-terriquez/workflowy-py"
-"Bug Tracker" = https://github.com/rodolfo-terriquez/workflowy-py/issues"
+"Bug Tracker" = "https://github.com/rodolfo-terriquez/workflowy-py/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -38,17 +38,21 @@ dev = [
     "ruff >= 0.1",
     "respx >= 0.20",
     "pytest-cov >= 4.0",
+    "pre-commit >= 3.0",
 ]
 
 [tool.ruff]
+lint.select = ["E", "F", "I", "W", "C", "B"]
+lint.ignore = ["B008"]
 line-length = 88
-select = ["E", "F", "I", "W", "C", "B"]
-ignore = ["B008"]
 
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
 exclude = ["tests/"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.hatch.version]
 path = "src/workflowy_py/__init__.py"

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, List, Literal, Optional, Union
 from datetime import datetime
+from typing import Any, List, Literal, Optional, Union
 
 import httpx
 
@@ -91,6 +91,19 @@ class WorkflowyClient:
 
         return self.get_node(current_node_id)
 
+    def _find_node_by_partial_id(
+        self, partial_id: str, parent: Union[str, Node] = "root"
+    ) -> Optional[Node]:
+        """Recursively search for a node by its partial (URL) ID."""
+        children = self.list_nodes(parent)
+        for child in children:
+            if child.id.replace("-", "").endswith(partial_id):
+                return child
+            found = self._find_node_by_partial_id(partial_id, parent=child)
+            if found:
+                return found
+        return None
+
     def _resolve_target(self, target: Union[str, Node]) -> str:
         """Resolves a user-provided target into a definitive node ID."""
         if isinstance(target, Node):
@@ -102,7 +115,15 @@ class WorkflowyClient:
         # Is it a UUID-like ID?
         if re.match(r"^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$", target):
             return target
-        
+
+        # Is it a partial ID from a URL?
+        if re.match(r"^[0-9a-f]{12}$", target):
+            found_node = self._find_node_by_partial_id(target)
+            if found_node:
+                return found_node.id
+            else:
+                raise NotFoundError(f"No node found with partial ID: '{target}'")
+
         if target == "root":
             return "root"
 
@@ -125,7 +146,9 @@ class WorkflowyClient:
             # We synthesize a representation of it, which is sufficient for
             # operations that require a parent ID.
             now = int(datetime.now().timestamp())
-            return Node(id="root", name="Home", priority=0, createdAt=now, modifiedAt=now)
+            return Node(
+                id="root", name="Home", priority=0, createdAt=now, modifiedAt=now
+            )
 
         response = self._client.get(f"/nodes/{node_id}")
         self._handle_response(response)
@@ -140,9 +163,7 @@ class WorkflowyClient:
         # The API is inconsistent: creating a node uses `parentId="root"`, but
         # listing top-level nodes requires `parent_id="None"` as a string literal.
         effective_parent_id = "None" if parent_id == "root" else parent_id
-        response = self._client.get(
-            "/nodes", params={"parent_id": effective_parent_id}
-        )
+        response = self._client.get("/nodes", params={"parent_id": effective_parent_id})
         self._handle_response(response)
 
         list_response = ListNodesResponse.model_validate(response.json())
