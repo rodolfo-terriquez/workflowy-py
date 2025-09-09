@@ -1,0 +1,34 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# IDEs
+.idea/
+.vscode/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+examples/
+tests/
+
+# AI coding artifacts
+notes.md
+tasks.md
+prd.md
